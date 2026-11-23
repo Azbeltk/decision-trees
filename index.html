@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decision trees – Pedagogical Aspect classification</title>
+<style>
+  :root { --accent: #1b5e75; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #f4f4f4; color: #222; }
+  header { max-width: 1200px; margin: 0 auto; padding: 28px 20px 8px; }
+  h1 { margin: 0 0 6px; font-size: 1.6rem; }
+  header p { margin: 0; color: #555; }
+  main { max-width: 1200px; margin: 0 auto; padding: 16px 20px 40px; }
+  .figure { position: relative; width: 100%; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.12); background: #eee; }
+  .figure img { display: block; width: 100%; height: auto; }
+  .hotspots { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+  .hotspots a { position: relative; outline-offset: -4px; transition: background .15s, box-shadow .15s; }
+  .hotspots a:hover, .hotspots a:focus-visible { background: rgba(27,94,117,.08); box-shadow: inset 0 0 0 4px var(--accent); }
+  .hotspots a span { position: absolute; right: 12px; bottom: 12px; background: var(--accent); color: #fff; font-weight: 600; font-size: .95rem;
+                     padding: 6px 12px; border-radius: 6px; opacity: .85; transition: opacity .15s; }
+  .hotspots a:hover span, .hotspots a:focus-visible span { opacity: 1; }
+  .list { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-top: 20px; }
+  .list a { display: block; background: #fff; border-radius: 8px; padding: 14px 16px; text-decoration: none; color: #222;
+            border-left: 5px solid var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .list a:hover { background: #eef6f8; }
+  .list b { color: var(--accent); }
+  footer { text-align: center; color: #777; font-size: .85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Decision trees and their confusion matrices</h1>
+  <p>Click any confusion matrix to open the interactive decision tree that produced it.</p>
+</header>
+<main>
+  <div class="figure">
+    <img src="confusion_matrices.jpg" alt="Four confusion matrices comparing Others vs Pedagogical Aspect predictions for trees 1 to 4">
+    <nav class="hotspots" aria-label="Open decision trees">
+      <a href="trees/tree1.html" title="Open tree 1"><span>Open tree 1 &rarr;</span></a>
+      <a href="trees/tree2.html" title="Open tree 2"><span>Open tree 2 &rarr;</span></a>
+      <a href="trees/tree3.html" title="Open tree 3"><span>Open tree 3 &rarr;</span></a>
+      <a href="trees/tree4.html" title="Open tree 4"><span>Open tree 4 &rarr;</span></a>
+    </nav>
+  </div>
+
+  <div class="list">
+    <a href="trees/tree1.html"><b>Tree 1</b><br>Base tree, no weights and no forced splits.</a>
+    <a href="trees/tree2.html"><b>Tree 2</b><br>Cost to prioritize and penalize specific variables.</a>
+    <a href="trees/tree3.html"><b>Tree 3</b><br>Selected splits, avoiding “Magikarp” tokens.</a>
+    <a href="trees/tree4.html"><b>Tree 4</b><br>Selected splits, prioritizing educational concepts.</a>
+  </div>
+</main>
+<footer>Each tree file is about 15 MB, so it may take a few seconds to load.</footer>
+</body>
+</html>
