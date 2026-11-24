@@ -1,56 +1,770 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Decision trees – Pedagogical Aspect classification</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Cajero de la Esperanza · Iglesia Adventista</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-  :root { --accent: #1b5e75; }
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #f4f4f4; color: #222; }
-  header { max-width: 1200px; margin: 0 auto; padding: 28px 20px 8px; }
-  h1 { margin: 0 0 6px; font-size: 1.6rem; }
-  header p { margin: 0; color: #555; }
-  main { max-width: 1200px; margin: 0 auto; padding: 16px 20px 40px; }
-  .figure { position: relative; width: 100%; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.12); background: #eee; }
-  .figure img { display: block; width: 100%; height: auto; }
-  .hotspots { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
-  .hotspots a { position: relative; outline-offset: -4px; transition: background .15s, box-shadow .15s; }
-  .hotspots a:hover, .hotspots a:focus-visible { background: rgba(27,94,117,.08); box-shadow: inset 0 0 0 4px var(--accent); }
-  .hotspots a span { position: absolute; right: 12px; bottom: 12px; background: var(--accent); color: #fff; font-weight: 600; font-size: .95rem;
-                     padding: 6px 12px; border-radius: 6px; opacity: .85; transition: opacity .15s; }
-  .hotspots a:hover span, .hotspots a:focus-visible span { opacity: 1; }
-  .list { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-top: 20px; }
-  .list a { display: block; background: #fff; border-radius: 8px; padding: 14px 16px; text-decoration: none; color: #222;
-            border-left: 5px solid var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-  .list a:hover { background: #eef6f8; }
-  .list b { color: var(--accent); }
-  footer { text-align: center; color: #777; font-size: .85rem; padding-bottom: 30px; }
+/* =========================================================
+   CAJERO DE LA ESPERANZA — pantalla de kiosco / cajero
+   ========================================================= */
+:root{
+  --azul:#0b2a4a;        /* fondo principal */
+  --azul2:#123d66;
+  --azul3:#1c5a8f;
+  --celeste:#4fb3e8;
+  --dorado:#f2b632;
+  --verde:#1f9d55;
+  --amarillo:#e8b400;
+  --rojo:#c8312d;
+  --blanco:#ffffff;
+  --gris:#c9d6e3;
+  --pantalla:#0e2238;
+  --radio:18px;
+  --fs: clamp(16px, 2.1vmin, 30px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#05121f;color:var(--blanco);
+  font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;font-size:var(--fs);
+  user-select:none;-webkit-user-select:none;touch-action:manipulation}
+
+/* Marco del cajero */
+#atm{position:fixed;inset:0;display:flex;flex-direction:column;
+  background:radial-gradient(ellipse at top,#173f66 0%,var(--azul) 55%,#061a2e 100%)}
+header.bar{display:flex;align-items:center;justify-content:space-between;
+  padding:1.6vmin 3vmin;background:rgba(0,0,0,.25);border-bottom:2px solid rgba(255,255,255,.08)}
+.brand{display:flex;align-items:center;gap:1.6vmin}
+.logo{height:7vmin;min-height:44px;width:auto;display:block}
+.logo-fallback{height:7vmin;min-height:44px;aspect-ratio:1;border-radius:50%;
+  border:3px solid var(--blanco);display:grid;place-items:center;font-weight:800;font-size:.8em;letter-spacing:.05em}
+.brand-txt b{display:block;font-size:1.05em;letter-spacing:.02em}
+.brand-txt span{font-size:.72em;color:var(--gris)}
+.clock{font-family:'Share Tech Mono',monospace;font-size:1.1em;text-align:right;color:var(--celeste)}
+.clock small{display:block;font-size:.65em;color:var(--gris)}
+
+main{flex:1;position:relative;overflow:hidden}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;padding:3vmin 4vmin;
+  animation:fade .35s ease}
+.screen.active{display:flex}
+@keyframes fade{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+
+footer.ticker{height:5.5vmin;min-height:34px;background:var(--dorado);color:#1a1a1a;
+  overflow:hidden;display:flex;align-items:center;font-weight:600;white-space:nowrap}
+footer.ticker .tag{background:var(--rojo);color:#fff;height:100%;display:flex;align-items:center;
+  padding:0 2vmin;font-weight:800;letter-spacing:.05em;z-index:2}
+footer.ticker .run{display:inline-block;padding-left:100%;animation:run 38s linear infinite}
+@keyframes run{to{transform:translateX(-100%)}}
+
+h1{font-size:2.4em;line-height:1.1;font-weight:800}
+h2{font-size:1.7em;line-height:1.15;font-weight:800}
+.muted{color:var(--gris)}
+.center{text-align:center}
+
+/* ---------- Pantalla inicio ---------- */
+#s-home{align-items:center;justify-content:center;text-align:center;gap:3vmin;cursor:pointer}
+#s-home .big-logos{display:flex;gap:5vmin;align-items:center;justify-content:center}
+#s-home .big-logos .logo,#s-home .big-logos .logo-fallback{height:16vmin}
+#s-home h1{font-size:3.2em}
+#s-home h1 em{font-style:normal;color:var(--dorado)}
+.card-slot{width:34vmin;height:3.2vmin;min-height:18px;border-radius:99px;background:#02080f;
+  box-shadow:inset 0 3px 8px #000,0 0 0 4px #24527f, 0 0 28px 6px rgba(79,179,232,.55);
+  animation:glow 1.6s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:inset 0 3px 8px #000,0 0 0 4px #24527f,0 0 8px 1px rgba(79,179,232,.25)}}
+.touch{font-size:1.4em;font-weight:700;animation:blink 1.4s steps(2) infinite}
+@keyframes blink{50%{opacity:.35}}
+
+/* ---------- Menú tipo cajero ---------- */
+#s-menu .menu-head{text-align:center;margin-bottom:2.5vmin}
+.menu-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:2.4vmin 5vmin;align-content:center}
+.op{position:relative;display:flex;align-items:center;gap:2vmin;min-height:14vmin;
+  padding:2vmin 2.6vmin;border-radius:var(--radio);border:2px solid rgba(255,255,255,.15);
+  background:linear-gradient(180deg,var(--azul3),var(--azul2));color:#fff;text-align:left;
+  font:inherit;cursor:pointer;box-shadow:0 6px 0 #061a2e,0 10px 24px rgba(0,0,0,.35);
+  transition:transform .08s, box-shadow .08s}
+.op:active{transform:translateY(5px);box-shadow:0 1px 0 #061a2e}
+.op .ico{font-size:2.2em;width:2em;text-align:center;flex:none}
+.op b{display:block;font-size:1.15em}
+.op small{display:block;color:var(--dorado);font-weight:700;letter-spacing:.08em;font-size:.72em;text-transform:uppercase}
+.op span.d{display:block;color:var(--gris);font-size:.78em;margin-top:.2em}
+/* flechas que apuntan a las teclas laterales físicas */
+.menu-grid .op.l::before,.menu-grid .op.r::after{content:"";position:absolute;top:50%;width:3vmin;height:3px;background:var(--celeste)}
+.menu-grid .op.l::before{left:-4vmin}
+.menu-grid .op.r::after{right:-4vmin}
+.op.tv{grid-column:1 / -1;background:linear-gradient(90deg,#7a1b18,var(--rojo));justify-content:center}
+.op.tv small{color:#ffe08a}
+.menu-foot{display:flex;justify-content:center;margin-top:2vmin}
+
+/* ---------- Botonera tipo cajero ---------- */
+.btn{font:inherit;font-weight:800;border:none;border-radius:14px;padding:2vmin 4vmin;min-height:9vmin;
+  color:#fff;cursor:pointer;letter-spacing:.04em;text-transform:uppercase;
+  box-shadow:0 5px 0 rgba(0,0,0,.45);transition:transform .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.45)}
+.btn.ok{background:var(--verde)}
+.btn.warn{background:var(--amarillo);color:#1a1a1a}
+.btn.no{background:var(--rojo)}
+.btn.ghost{background:rgba(255,255,255,.12)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+
+/* ---------- Paso de operación ---------- */
+#s-step{gap:2vmin}
+.op-title{display:flex;align-items:center;gap:1.5vmin;color:var(--dorado);font-weight:800;
+  text-transform:uppercase;letter-spacing:.08em;font-size:.85em}
+.progress{display:flex;gap:.8vmin;margin-left:auto}
+.progress i{width:2.4vmin;height:2.4vmin;min-width:12px;min-height:12px;border-radius:50%;background:rgba(255,255,255,.18)}
+.progress i.on{background:var(--dorado)}
+.prompt{font-size:1.65em;font-weight:800}
+.hint{color:var(--gris);font-size:.9em;margin-top:-1vmin}
+.display{font-family:'Share Tech Mono',monospace;font-size:1.7em;background:#02101c;color:#7ef0a8;
+  border:3px solid #24527f;border-radius:12px;padding:1.6vmin 2vmin;min-height:9vmin;
+  display:flex;align-items:center;word-break:break-word;letter-spacing:.04em}
+.display.multi{font-size:1.2em;min-height:14vmin;align-items:flex-start}
+.display .caret{display:inline-block;width:.55em;height:1em;background:#7ef0a8;margin-left:2px;animation:blink 1s steps(2) infinite}
+.display .ph{color:#3d6d58}
+.step-body{flex:1;display:flex;flex-direction:column;gap:1.6vmin;min-height:0}
+.actions{display:flex;gap:2vmin;justify-content:space-between}
+.actions .btn{flex:1}
+
+/* Teclado alfabético */
+.kb{display:flex;flex-direction:column;gap:1vmin;flex:1;justify-content:flex-end}
+.kb .row{display:flex;gap:1vmin;justify-content:center}
+.key{font:inherit;font-weight:700;flex:1;max-width:9vmin;min-height:8vmin;border-radius:10px;border:none;
+  background:#dfe7ef;color:#0b2a4a;font-size:1.1em;box-shadow:0 4px 0 #8aa1b8;cursor:pointer}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #8aa1b8}
+.key.w2{max-width:16vmin;flex:2}.key.w6{max-width:52vmin;flex:6}
+.key.dark{background:#5c7590;color:#fff;box-shadow:0 4px 0 #2d3f52}
+
+/* Teclado numérico estilo cajero */
+.pin{display:grid;grid-template-columns:repeat(3,15vmin) 20vmin;gap:1.4vmin;justify-content:center;flex:1;align-content:center}
+.pin .key{max-width:none;min-height:10vmin;font-size:1.5em}
+.pin .side{font-size:.75em;text-transform:uppercase;letter-spacing:.05em;color:#fff}
+.pin .side.no{background:var(--rojo);box-shadow:0 4px 0 #7a1b18}
+.pin .side.warn{background:var(--amarillo);color:#1a1a1a;box-shadow:0 4px 0 #8a6b00}
+.pin .side.ok{background:var(--verde);box-shadow:0 4px 0 #0c5a2f}
+.pin .side.blank{visibility:hidden}
+
+/* Opciones ("montos") */
+.choices{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:2vmin;align-content:center}
+.choice{font:inherit;font-weight:700;min-height:12vmin;border-radius:var(--radio);border:2px solid rgba(255,255,255,.2);
+  background:linear-gradient(180deg,#1f4f7d,#163b5f);color:#fff;cursor:pointer;padding:1.6vmin 2vmin;
+  box-shadow:0 5px 0 #061a2e;text-align:left;display:flex;gap:1.5vmin;align-items:center}
+.choice:active{transform:translateY(4px);box-shadow:0 1px 0 #061a2e}
+.choice .ico{font-size:1.6em}
+.choice small{display:block;color:var(--gris);font-weight:400;font-size:.75em}
+.choice.sel{border-color:var(--dorado);background:linear-gradient(180deg,#2c6aa5,#1e4f80)}
+
+/* Confirmación */
+.summary{flex:1;background:#f4f1e8;color:#222;border-radius:12px;padding:2.4vmin 3vmin;
+  font-family:'Share Tech Mono',monospace;overflow:auto;font-size:1em;line-height:1.5}
+.summary .row{display:flex;justify-content:space-between;gap:2vmin;border-bottom:1px dashed #bbb;padding:.4vmin 0}
+.summary .row b{white-space:nowrap}
+.summary .row span{text-align:right}
+.consent{display:flex;gap:1.6vmin;align-items:center;font-size:.82em;color:var(--gris);cursor:pointer}
+.consent .box{width:5vmin;height:5vmin;min-width:28px;min-height:28px;border-radius:8px;border:3px solid var(--celeste);
+  display:grid;place-items:center;font-size:1.2em;flex:none}
+.consent.on .box{background:var(--verde);border-color:var(--verde)}
+
+/* Procesando */
+#s-proc{align-items:center;justify-content:center;gap:3vmin;text-align:center}
+.spinner{width:16vmin;height:16vmin;border-radius:50%;border:1.6vmin solid rgba(255,255,255,.15);border-top-color:var(--dorado);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dots::after{content:"";animation:dots 1.5s steps(4) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+
+/* Comprobante */
+#s-receipt{align-items:center;gap:2vmin}
+.printer{width:62vmin;max-width:92%;height:3vmin;min-height:16px;border-radius:99px;background:#02080f;box-shadow:inset 0 3px 8px #000,0 0 0 4px #24527f}
+.paper-wrap{overflow:hidden;width:60vmin;max-width:86%;flex:1;min-height:0;margin-top:-1.5vmin;display:flex;flex-direction:column}
+.paper{background:#fffef8;color:#222;font-family:'Share Tech Mono',monospace;padding:2.4vmin 3vmin;font-size:.78em;line-height:1.35;
+  transform:translateY(-100%);animation:print 2.4s steps(24) forwards;
+  -webkit-mask:linear-gradient(#000 calc(100% - 12px),transparent 0),conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/16px 12px repeat-x;
+          mask:linear-gradient(#000 calc(100% - 12px),transparent 0),conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/16px 12px repeat-x;
+  padding-bottom:5vmin}
+@keyframes print{to{transform:none}}
+.paper .c{text-align:center}
+.paper hr{border:none;border-top:1px dashed #999;margin:1vmin 0}
+.paper .verse{font-style:italic;text-align:center;margin-top:1vmin}
+.receipt-actions{display:flex;gap:3vmin;width:100%;justify-content:center}
+.receipt-actions .btn{min-width:30vmin}
+
+/* Canal Nuevo Tiempo */
+#s-tv{gap:2vmin}
+.tv-head{display:flex;align-items:center;gap:2vmin}
+.tv-head .live{background:var(--rojo);padding:.6vmin 1.6vmin;border-radius:6px;font-weight:800;font-size:.75em;letter-spacing:.1em;animation:blink 1.4s steps(2) infinite}
+.tv-body{flex:1;display:grid;grid-template-columns:2.2fr 1fr;gap:2.5vmin;min-height:0}
+.tv-screen{background:#000;border-radius:14px;overflow:hidden;border:4px solid #24527f;position:relative;display:flex}
+.tv-screen iframe{width:100%;height:100%;border:0}
+.tv-off{margin:auto;text-align:center;padding:4vmin;color:var(--gris)}
+.tv-off .logo,.tv-off .logo-fallback{height:14vmin;margin:0 auto 2vmin}
+.tv-side{display:flex;flex-direction:column;gap:2vmin;min-height:0}
+.info-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:2vmin;font-size:.85em}
+.info-card b{color:var(--dorado);display:block;margin-bottom:.6vmin;text-transform:uppercase;letter-spacing:.06em;font-size:.85em}
+#qr{background:#fff;padding:1.4vmin;border-radius:10px;width:max-content;margin:1vmin auto 0}
+#qr img,#qr canvas{width:20vmin!important;height:20vmin!important}
+
+/* Aviso de inactividad */
+#idle{position:fixed;inset:0;background:rgba(2,10,20,.85);display:none;align-items:center;justify-content:center;z-index:50}
+#idle.show{display:flex}
+#idle .box{background:var(--azul2);border:3px solid var(--dorado);border-radius:20px;padding:5vmin;text-align:center;max-width:80vmin}
+#idle .count{font-size:4em;font-weight:800;color:var(--dorado);font-family:'Share Tech Mono',monospace}
+
+/* Panel admin oculto */
+#admin{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;z-index:60;align-items:center;justify-content:center}
+#admin.show{display:flex}
+#admin .box{background:#fff;color:#111;border-radius:16px;padding:4vmin;min-width:60vmin;display:flex;flex-direction:column;gap:2vmin;font-size:.85em}
+#admin .btn{font-size:.85em}
+#admin-hit{position:fixed;right:0;bottom:0;width:70px;height:70px;z-index:40}
+
+@media (orientation:portrait){
+  .menu-grid{grid-template-columns:1fr}
+  .menu-grid .op.l::before,.menu-grid .op.r::after{display:none}
+  .tv-body{grid-template-columns:1fr;grid-template-rows:1.4fr 1fr}
+  .choices{grid-template-columns:1fr}
+  .pin{grid-template-columns:repeat(3,18vmin) 24vmin}
+}
 </style>
 </head>
-<body>
-<header>
-  <h1>Decision trees and their confusion matrices</h1>
-  <p>Click any confusion matrix to open the interactive decision tree that produced it.</p>
-</header>
-<main>
-  <div class="figure">
-    <img src="confusion_matrices.jpg" alt="Four confusion matrices comparing Others vs Pedagogical Aspect predictions for trees 1 to 4">
-    <nav class="hotspots" aria-label="Open decision trees">
-      <a href="trees/tree1.html" title="Open tree 1"><span>Open tree 1 &rarr;</span></a>
-      <a href="trees/tree2.html" title="Open tree 2"><span>Open tree 2 &rarr;</span></a>
-      <a href="trees/tree3.html" title="Open tree 3"><span>Open tree 3 &rarr;</span></a>
-      <a href="trees/tree4.html" title="Open tree 4"><span>Open tree 4 &rarr;</span></a>
-    </nav>
-  </div>
+<body oncontextmenu="return false">
+<div id="atm">
+  <header class="bar">
+    <div class="brand">
+      <span data-logo="iasd"></span>
+      <div class="brand-txt"><b id="hdr-title">Cajero de la Esperanza</b><span id="hdr-sub">Iglesia Adventista del Séptimo Día</span></div>
+    </div>
+    <div class="clock"><span id="clk">--:--</span><small id="clk-date"></small></div>
+  </header>
 
-  <div class="list">
-    <a href="trees/tree1.html"><b>Tree 1</b><br>Base tree, no weights and no forced splits.</a>
-    <a href="trees/tree2.html"><b>Tree 2</b><br>Cost to prioritize and penalize specific variables.</a>
-    <a href="trees/tree3.html"><b>Tree 3</b><br>Selected splits, avoiding “Magikarp” tokens.</a>
-    <a href="trees/tree4.html"><b>Tree 4</b><br>Selected splits, prioritizing educational concepts.</a>
-  </div>
-</main>
-<footer>Each tree file is about 15 MB, so it may take a few seconds to load.</footer>
+  <main>
+    <!-- 1. INICIO -->
+    <section class="screen active" id="s-home">
+      <div class="big-logos"><span data-logo="iasd"></span><span data-logo="nt"></span></div>
+      <h1>Bienvenido al<br><em>Cajero de la Esperanza</em></h1>
+      <p class="muted">Aquí no retiras dinero: recibes oración, lectura y compañía. Sin costo.</p>
+      <div class="card-slot" aria-hidden="true"></div>
+      <p class="touch">TOQUE LA PANTALLA PARA COMENZAR</p>
+    </section>
+
+    <!-- 2. MENÚ -->
+    <section class="screen" id="s-menu">
+      <div class="menu-head">
+        <h2>Seleccione su operación</h2>
+        <p class="muted">Todas las operaciones son gratuitas</p>
+      </div>
+      <div class="menu-grid">
+        <button class="op l" data-op="oracion"><span class="ico">🙏</span><span><small>Depósito</small><b>Pedido de oración</b><span class="d">Deposite su petición y oraremos por usted</span></span></button>
+        <button class="op r" data-op="visita"><span class="ico">🏠</span><span><small>Transferencia</small><b>Ser visitado/a</b><span class="d">Le visitamos en su hogar</span></span></button>
+        <button class="op l" data-op="literatura"><span class="ico">📖</span><span><small>Retiro</small><b>Literatura cristiana</b><span class="d">Reciba libros y revistas gratis</span></span></button>
+        <button class="op r" data-op="estudio"><span class="ico">✝️</span><span><small>Inversión</small><b>Estudiar la Biblia</b><span class="d">Un plan de estudio a su medida</span></span></button>
+        <button class="op tv" data-go="tv"><span class="ico">📺</span><span><small>Canal de información</small><b>Canal Nuevo Tiempo Chile</b></span></button>
+      </div>
+      <div class="menu-foot"><button class="btn no" data-go="home">Finalizar</button></div>
+    </section>
+
+    <!-- 3. PASO DE OPERACIÓN (genérico) -->
+    <section class="screen" id="s-step">
+      <div class="op-title"><span id="st-op"></span><div class="progress" id="st-prog"></div></div>
+      <div class="prompt" id="st-prompt"></div>
+      <div class="hint" id="st-hint"></div>
+      <div class="step-body" id="st-body"></div>
+    </section>
+
+    <!-- 4. CONFIRMACIÓN -->
+    <section class="screen" id="s-confirm" style="gap:2vmin">
+      <div class="op-title"><span>Confirme su operación</span></div>
+      <div class="summary" id="cf-summary"></div>
+      <div class="consent" id="cf-consent"><span class="box"></span>
+        <span>Autorizo a la Iglesia Adventista del Séptimo Día a usar estos datos solo para contactarme por esta solicitud (Ley N° 19.628). Puedo pedir su eliminación en cualquier momento.</span></div>
+      <div class="actions">
+        <button class="btn no" data-act="cancel">Cancelar</button>
+        <button class="btn warn" data-act="back">Corregir</button>
+        <button class="btn ok" id="cf-ok" disabled>Confirmar</button>
+      </div>
+    </section>
+
+    <!-- 5. PROCESANDO -->
+    <section class="screen" id="s-proc">
+      <div class="spinner"></div>
+      <h2>Procesando su operación<span class="dots"></span></h2>
+      <p class="muted">No retire su… fe 😊</p>
+    </section>
+
+    <!-- 6. COMPROBANTE -->
+    <section class="screen" id="s-receipt">
+      <h2 class="center">Operación exitosa · Retire su comprobante</h2>
+      <div class="printer"></div>
+      <div class="paper-wrap"><div class="paper" id="rc-paper"></div></div>
+      <p class="center">¿Desea realizar otra operación?</p>
+      <div class="receipt-actions">
+        <button class="btn ok" data-go="menu">Sí</button>
+        <button class="btn no" data-go="home">No, finalizar</button>
+      </div>
+    </section>
+
+    <!-- 7. CANAL NUEVO TIEMPO -->
+    <section class="screen" id="s-tv">
+      <div class="tv-head">
+        <span data-logo="nt"></span>
+        <h2 style="flex:1">Canal de información · Nuevo Tiempo Chile</h2>
+        <span class="live">EN VIVO</span>
+      </div>
+      <div class="tv-body">
+        <div class="tv-screen" id="tv-screen"></div>
+        <div class="tv-side">
+          <div class="info-card"><b>Siga viendo en casa</b>Escanee el código con su celular para ver Nuevo Tiempo cuando quiera.<div id="qr"></div></div>
+          <div class="info-card" id="tv-info"></div>
+          <button class="btn ghost" data-go="menu">Volver al menú</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="ticker"><span class="tag">INFO</span><span class="run" id="ticker"></span></footer>
+</div>
+
+<div id="idle"><div class="box">
+  <h2>¿Sigue ahí?</h2>
+  <p class="muted" style="margin:1.5vmin 0">Por su privacidad, la sesión se cerrará en</p>
+  <div class="count" id="idle-n">10</div>
+  <button class="btn ok" id="idle-stay" style="margin-top:2vmin">Continuar</button>
+</div></div>
+
+<div id="admin-hit"></div>
+<div id="admin"><div class="box">
+  <h2 style="color:#0b2a4a">Panel del kiosco</h2>
+  <div id="adm-stats"></div>
+  <button class="btn ok" id="adm-retry">Reintentar envíos pendientes</button>
+  <button class="btn ok" id="adm-all">Reenviar TODOS los registros (sin duplicar)</button>
+  <button class="btn warn" id="adm-csv">Descargar respaldo CSV</button>
+  <button class="btn ghost" style="color:#111;background:#ddd" id="adm-fs">Pantalla completa</button>
+  <button class="btn no" id="adm-close">Cerrar</button>
+</div></div>
+
+<script>
+/* =========================================================
+   CONFIGURACIÓN — edite solo esta sección
+   ========================================================= */
+const CONFIG = {
+  // URL del Web App de Google Apps Script (ver README). Si queda vacío, los
+  // datos se guardan solo en este equipo (respaldo descargable desde el panel).
+  endpoint: "https://script.google.com/macros/s/AKfycbwUWaQKzD4btmcMFye3Vu9ynsYE1quWbH3uy0MP-WeGqfrvcxDKqb5ARueXWYVqPbrksA/exec",
+
+  kioscoId: "CAJERO-01",
+  comuna: "",                          // comuna fija donde está el cajero (se guarda en la planilla)               // identifica este equipo en la planilla
+  lugar: "Iglesia Adventista · Chile",  // aparece en el comprobante
+
+  logos: {
+    iasd: "img/logo-iasd.png",         // logo oficial de la Iglesia Adventista
+    nt:   "img/logo-nuevotiempo.png"   // logo oficial de Nuevo Tiempo
+  },
+
+  nuevoTiempo: {
+    // ID interno del canal de YouTube @NuevoTiempoChile → muestra la transmisión en vivo.
+    youtubeChannelId: "UCNDiH9MuZyzzFcBTUno4eDA",
+    youtube: "https://www.youtube.com/@NuevoTiempoChile",
+    // Opcional: para mostrar un video o lista fija en vez del en vivo, pegue aquí su URL
+    // de inserción (ej: "https://www.youtube.com/embed/ID_DEL_VIDEO"). Si se deja vacío, se usa el en vivo.
+    embedUrl: "",
+    website: "https://www.nuevotiempo.cl/", // destino del código QR
+    info: "Programación cristiana 24 horas: familia, salud, música y estudio de la Biblia."
+  },
+
+  inactividadSeg: 60,   // segundos sin tocar antes de avisar
+  avisoSeg: 10,         // cuenta regresiva del aviso
+  adminPin: "2580",     // PIN del panel oculto (mantener presionada la esquina inferior derecha 3 s)
+
+  ticker: [
+    "Bienvenido al Cajero de la Esperanza",
+    "\"Venid a mí todos los que estáis trabajados y cargados, y yo os haré descansar\" — Mateo 11:28",
+    "Todas las operaciones son gratuitas",
+    "Sintonice Canal Nuevo Tiempo Chile",
+    "\"Lámpara es a mis pies tu palabra, y lumbrera a mi camino\" — Salmo 119:105"
+  ],
+
+  versiculos: [
+    "Echa sobre Jehová tu carga, y él te sustentará. — Salmo 55:22",
+    "Por nada estéis afanosos... — Filipenses 4:6",
+    "Jehová es mi pastor; nada me faltará. — Salmo 23:1",
+    "Clama a mí, y yo te responderé. — Jeremías 33:3",
+    "Porque yo sé los pensamientos que tengo acerca de vosotros... de paz. — Jeremías 29:11"
+  ]
+};
+
+/* =========================================================
+   DEFINICIÓN DE OPERACIONES (pasos estilo cajero)
+   tipos: text | phone | choice | area
+   ========================================================= */
+const COMUNES_INI = [
+  {id:"nombre",  type:"text",  label:"Nombre", prompt:"Ingrese su nombre", hint:"Nombre y apellido", min:2},
+];
+const COMUNES_FIN = [
+  {id:"telefono",type:"phone", label:"Teléfono", prompt:"Ingrese su número de celular", hint:"El +56 9 ya está ingresado: digite los 8 números restantes"},
+];
+
+const OPS = {
+  oracion:{nombre:"Pedido de oración", tipo:"DEPÓSITO", ico:"🙏",
+    pasos:[...COMUNES_INI,
+      {id:"motivo", type:"choice", label:"Motivo", prompt:"Seleccione el motivo de su petición",
+        opts:[["❤️","Salud"],["👨‍👩‍👧","Familia"],["💼","Trabajo / finanzas"],["🕊️","Paz espiritual"],["🎓","Estudios"],["✨","Otro motivo"]]},
+      {id:"detalle", type:"area", label:"Petición", prompt:"Escriba su petición (opcional)", hint:"Será tratada con total reserva", optional:true},
+      {id:"llamada", type:"choice", label:"Oración por teléfono", prompt:"¿Desea que oremos con usted por teléfono?",
+        opts:[["📞","Sí, llámenme"],["🙏","No, solo oren por mí"]]},
+      ...COMUNES_FIN],
+    mensaje:"Su petición fue depositada. Un grupo de oración intercederá por usted."},
+
+  literatura:{nombre:"Literatura cristiana", tipo:"RETIRO", ico:"📖",
+    pasos:[...COMUNES_INI,
+      {id:"material", type:"choice", label:"Material", prompt:"Seleccione el material a retirar",
+        opts:[["📘","El camino a Cristo","Libro"],["📕","La gran esperanza","Libro"],["📰","Revista Vida Feliz","Revista"],["🧒","Material para niños","Historias bíblicas"],["❤️","Salud y familia","Folletos"],["🎁","Sorpréndanme",""]]},
+      {id:"formato", type:"choice", label:"Formato", prompt:"¿Cómo desea recibirlo?",
+        opts:[["📦","Impreso a domicilio"],["📱","Digital por WhatsApp"],["⛪","Retiro en la iglesia"]]},
+      {id:"direccion", type:"text", label:"Dirección", prompt:"Ingrese su dirección", hint:"Calle y número", min:3,
+        when:d=>d.formato==="Impreso a domicilio"},
+      ...COMUNES_FIN],
+    mensaje:"Su retiro fue autorizado. Le contactaremos para la entrega de su material."},
+
+  visita:{nombre:"Ser visitado/a", tipo:"TRANSFERENCIA", ico:"🏠",
+    pasos:[...COMUNES_INI,
+      {id:"motivo", type:"choice", label:"Motivo", prompt:"¿Qué tipo de visita desea?",
+        opts:[["🙏","Oración en el hogar"],["🤝","Conversar / consejería"],["🧑‍⚕️","Visita a enfermo"],["👋","Conocer la iglesia"]]},
+      {id:"direccion", type:"text", label:"Dirección", prompt:"Ingrese la dirección de la visita", hint:"Calle y número", min:3},
+      {id:"dia", type:"choice", label:"Día preferido", prompt:"Seleccione el día preferido",
+        opts:[["📅","Lunes a jueves"],["📅","Viernes"],["📅","Sábado"],["📅","Domingo"]]},
+      {id:"horario", type:"choice", label:"Horario", prompt:"Seleccione el horario",
+        opts:[["🌅","Mañana"],["☀️","Tarde"],["🌙","Noche"]]},
+      ...COMUNES_FIN],
+    mensaje:"Su transferencia fue programada. Un hermano/a le llamará para coordinar la visita."},
+
+  estudio:{nombre:"Estudiar la Biblia", tipo:"INVERSIÓN", ico:"✝️",
+    pasos:[...COMUNES_INI,
+      {id:"tema", type:"choice", label:"Plan", prompt:"Seleccione su plan de inversión espiritual",
+        opts:[["🌱","Primeros pasos","Para comenzar"],["🔮","Profecía","Daniel y Apocalipsis"],["👨‍👩‍👧","Familia","Principios bíblicos"],["❤️","Esperanza","Promesas de Dios"]]},
+      {id:"modalidad", type:"choice", label:"Modalidad", prompt:"Seleccione la modalidad",
+        opts:[["🏠","Presencial en casa"],["💻","En línea (video)"],["💬","Por WhatsApp"],["⛪","En la iglesia"]]},
+      {id:"horario", type:"choice", label:"Horario", prompt:"Seleccione el horario",
+        opts:[["🌅","Mañana"],["☀️","Tarde"],["🌙","Noche"],["🔄","Flexible"]]},
+      ...COMUNES_FIN],
+    mensaje:"Su inversión fue abierta. Un instructor bíblico le contactará pronto."}
+};
+
+/* =========================================================
+   UTILIDADES
+   ========================================================= */
+const $ = s=>document.querySelector(s);
+const $$ = s=>[...document.querySelectorAll(s)];
+const esc = s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store = {
+  get(k,def){try{return JSON.parse(localStorage.getItem(k))??def}catch(e){return def}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+
+/* Logos con respaldo si falta el archivo */
+function paintLogos(){
+  $$("[data-logo]").forEach(el=>{
+    const key=el.dataset.logo, src=CONFIG.logos[key];
+    const fb=()=>{el.innerHTML=`<div class="logo-fallback">${key==="iasd"?"IASD":"NT"}</div>`};
+    if(!src){fb();return}
+    const img=new Image(); img.className="logo"; img.alt=key==="iasd"?"Iglesia Adventista del Séptimo Día":"Nuevo Tiempo";
+    img.onerror=fb; img.src=src; el.innerHTML=""; el.appendChild(img);
+  });
+}
+
+/* Reloj y ticker */
+function tick(){
+  const d=new Date();
+  $("#clk").textContent=d.toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});
+  $("#clk-date").textContent=d.toLocaleDateString("es-CL",{weekday:"long",day:"numeric",month:"long"});
+}
+$("#ticker").textContent=CONFIG.ticker.join("   ✦   ");
+
+/* =========================================================
+   NAVEGACIÓN
+   ========================================================= */
+let current="home";
+function go(name){
+  $$(".screen").forEach(s=>s.classList.remove("active"));
+  $("#s-"+name).classList.add("active");
+  current=name;
+  if(name==="tv") startTV(); else stopTV();
+  if(name==="home") resetSession();
+}
+document.addEventListener("click",e=>{
+  const g=e.target.closest("[data-go]"); if(g){go(g.dataset.go);return}
+  const o=e.target.closest("[data-op]"); if(o){startOp(o.dataset.op);return}
+  const a=e.target.closest("[data-act]");
+  if(a){ if(a.dataset.act==="cancel") go("menu"); if(a.dataset.act==="back"){stepIdx=visibleSteps().length-1;renderStep();go("step")} }
+});
+$("#s-home").addEventListener("click",()=>{go("menu"); tryFullscreen()});
+
+function tryFullscreen(){
+  const el=document.documentElement;
+  if(!document.fullscreenElement && el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+}
+
+/* =========================================================
+   FLUJO DE OPERACIÓN
+   ========================================================= */
+let op=null, data={}, stepIdx=0, buffer="";
+function resetSession(){op=null;data={};stepIdx=0;buffer=""}
+function visibleSteps(){return op.pasos.filter(p=>!p.when||p.when(data))}
+
+function startOp(key){
+  op=OPS[key]; op.key=key; data={}; stepIdx=0; renderStep(); go("step");
+}
+
+function renderStep(){
+  const steps=visibleSteps(), st=steps[stepIdx];
+  buffer=data[st.id]||"";
+  if(st.type==="phone") buffer=buffer.replace(/^9/,"");
+  $("#st-op").textContent=`${op.ico} ${op.tipo} · ${op.nombre}`;
+  $("#st-prog").innerHTML=steps.map((_,i)=>`<i class="${i<=stepIdx?"on":""}"></i>`).join("");
+  $("#st-prompt").textContent=st.prompt;
+  $("#st-hint").textContent=st.hint||"";
+  const body=$("#st-body");
+
+  if(st.type==="choice"){
+    body.innerHTML=`<div class="choices">${st.opts.map(([ico,txt,sub])=>
+      `<button class="choice ${data[st.id]===txt?"sel":""}" data-val="${esc(txt)}"><span class="ico">${ico}</span><span>${esc(txt)}${sub?`<small>${esc(sub)}</small>`:""}</span></button>`).join("")}</div>
+      <div class="actions"><button class="btn no" data-act="cancel">Cancelar</button><button class="btn warn" id="st-prev">Volver</button></div>`;
+    body.querySelectorAll(".choice").forEach(b=>b.onclick=()=>{data[st.id]=b.dataset.val; next()});
+  }
+  else if(st.type==="phone"){
+    body.innerHTML=`<div class="display" id="disp"></div>
+      <div class="pin">
+        ${[1,2,3].map(n=>`<button class="key" data-k="${n}">${n}</button>`).join("")}<button class="key side no" data-act="cancel">Cancelar</button>
+        ${[4,5,6].map(n=>`<button class="key" data-k="${n}">${n}</button>`).join("")}<button class="key side warn" data-k="DEL">Corregir</button>
+        ${[7,8,9].map(n=>`<button class="key" data-k="${n}">${n}</button>`).join("")}<button class="key side warn" id="st-prev">Volver</button>
+        <span></span><button class="key" data-k="0">0</button><span></span><button class="key side ok" id="st-next">Continuar</button>
+      </div>`;
+    body.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{
+      const k=b.dataset.k;
+      if(k==="DEL") buffer=buffer.slice(0,-1); else if(buffer.length<8) buffer+=k;
+      paintDisplay(st);
+    });
+  }
+  else { // text / area
+    const rows=[["1","2","3","4","5","6","7","8","9","0"],["Q","W","E","R","T","Y","U","I","O","P"],["A","S","D","F","G","H","J","K","L","Ñ"],["Z","X","C","V","B","N","M",",",".","-"]];
+    body.innerHTML=`<div class="display ${st.type==="area"?"multi":""}" id="disp"></div>
+      <div class="kb">
+        ${rows.map(r=>`<div class="row">${r.map(k=>`<button class="key" data-k="${k}">${k}</button>`).join("")}</div>`).join("")}
+        <div class="row"><button class="key dark w2" data-k="ÁÉ">Á É…</button><button class="key w6" data-k=" ">espacio</button><button class="key dark w2" data-k="DEL">⌫ Borrar</button></div>
+      </div>
+      <div class="actions"><button class="btn no" data-act="cancel">Cancelar</button><button class="btn warn" id="st-prev">Volver</button>
+        ${st.optional?`<button class="btn ghost" id="st-skip">Omitir</button>`:""}<button class="btn ok" id="st-next">Continuar</button></div>`;
+    let acc=false;
+    const accMap={A:"Á",E:"É",I:"Í",O:"Ó",U:"Ú"};
+    body.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{
+      const k=b.dataset.k, max=st.type==="area"?280:60;
+      if(k==="DEL") buffer=buffer.slice(0,-1);
+      else if(k==="ÁÉ"){acc=!acc;b.style.background=acc?"var(--dorado)":"";return}
+      else if(buffer.length<max){
+        let ch=acc&&accMap[k]?accMap[k]:k;
+        // Mayúscula al inicio de palabra, minúscula en el resto
+        const start=!buffer.length||/[\s.,-]$/.test(buffer);
+        buffer+= start?ch:ch.toLowerCase();
+        if(acc){acc=false;body.querySelector('[data-k="ÁÉ"]').style.background=""}
+      }
+      paintDisplay(st);
+    });
+    const sk=$("#st-skip"); if(sk) sk.onclick=()=>{data[st.id]="";next()};
+  }
+  const pv=$("#st-prev"); if(pv) pv.onclick=prev;
+  const nx=$("#st-next"); if(nx) nx.onclick=()=>{ if(valid(st)){data[st.id]=st.type==="phone"?"9"+buffer:buffer.trim();next()} };
+  paintDisplay(st);
+}
+
+function valid(st){
+  const v=buffer.trim();
+  if(st.type==="phone") return /^\d{8}$/.test(v);
+  if(st.optional) return true;
+  return v.length>=(st.min||1);
+}
+function paintDisplay(st){
+  const d=$("#disp"); if(!d) return;
+  let shown=buffer;
+  if(st.type==="phone"){
+    // "+56 9" fijo; los 8 dígitos se completan sobre la plantilla ____ ____
+    const t=(buffer+"________").slice(0,8);
+    const typed=buffer.length;
+    const fmt=[...t].map((c,i)=>(i===4?" ":"")+(i<typed?esc(c):`<span class="ph">_</span>`)).join("");
+    d.innerHTML=`<span style="color:#fff">+56 9</span>&nbsp;${fmt}`;
+    const nx=$("#st-next"); if(nx) nx.disabled=!valid(st);
+    return;
+  }
+  d.innerHTML=buffer?`${esc(shown)}<span class="caret"></span>`:`<span class="ph">_</span><span class="caret"></span>`;
+  const nx=$("#st-next"); if(nx) nx.disabled=!valid(st);
+}
+function prev(){ if(stepIdx===0){go("menu");return} stepIdx--; renderStep(); }
+function next(){
+  const steps=visibleSteps();
+  // limpia datos de pasos que ya no aplican
+  op.pasos.forEach(p=>{ if(p.when&&!p.when(data)) delete data[p.id] });
+  if(stepIdx<steps.length-1){stepIdx++;renderStep()} else showConfirm();
+}
+
+/* Confirmación */
+let consent=false;
+function showConfirm(){
+  consent=false; $("#cf-consent").classList.remove("on"); $("#cf-consent .box").textContent=""; $("#cf-ok").disabled=true;
+  const rows=[["Operación",`${op.tipo} · ${op.nombre}`],
+    ...visibleSteps().map(p=>[p.label, p.type==="phone"?"+56 9 "+data[p.id].slice(1,5)+" "+data[p.id].slice(5):(data[p.id]||"—")])];
+  $("#cf-summary").innerHTML=rows.map(([k,v])=>`<div class="row"><b>${esc(k)}</b><span>${esc(v)}</span></div>`).join("");
+  go("confirm");
+}
+$("#cf-consent").onclick=()=>{
+  consent=!consent; $("#cf-consent").classList.toggle("on",consent);
+  $("#cf-consent .box").textContent=consent?"✓":""; $("#cf-ok").disabled=!consent;
+};
+$("#cf-ok").onclick=submit;
+
+/* =========================================================
+   ENVÍO DE DATOS
+   ========================================================= */
+function folio(){
+  const d=new Date(), p=n=>String(n).padStart(2,"0");
+  return `${p(d.getDate())}${p(d.getMonth()+1)}${String(d.getFullYear()).slice(2)}-${p(d.getHours())}${p(d.getMinutes())}-${Math.floor(1000+Math.random()*9000)}`;
+}
+
+async function send(rec){
+  if(!CONFIG.endpoint) return false;
+  try{
+    // Petición "simple" (sin preflight): Apps Script responde con CORS abierto,
+    // así se puede leer la respuesta y confirmar que la fila se guardó.
+    const r=await fetch(CONFIG.endpoint,{method:"POST",redirect:"follow",
+      headers:{"Content-Type":"application/x-www-form-urlencoded"},
+      body:new URLSearchParams(rec).toString()});
+    const j=await r.json();
+    if(!j.ok) console.warn("Apps Script respondió con error:",j.error);
+    return !!j.ok;
+  }catch(e){
+    console.warn("No se pudo enviar (¿acceso del script no es 'Cualquier persona'?)",e);
+    return false;   // queda en cola y se reintenta
+  }
+}
+
+async function submit(){
+  go("proc");
+  const rec={
+    folio:folio(), fecha:new Date().toLocaleString("es-CL"), kiosco:CONFIG.kioscoId,
+    operacion:op.nombre, tipo_cajero:op.tipo,
+    nombre:data.nombre||"", telefono:data.telefono?"+56"+data.telefono:"", comuna:CONFIG.comuna||"",
+    direccion:data.direccion||"",
+    detalle: visibleSteps().filter(p=>!["nombre","telefono","comuna","direccion"].includes(p.id))
+              .map(p=>`${p.label}: ${data[p.id]||"—"}`).join(" | "),
+    consentimiento:"Sí"
+  };
+  // respaldo local siempre
+  const all=store.get("cajero_registros",[]); all.push(rec); store.set("cajero_registros",all);
+
+  const [ok]=await Promise.all([send(rec), new Promise(r=>setTimeout(r,2200))]);
+  if(!ok){ const q=store.get("cajero_pendientes",[]); q.push(rec); store.set("cajero_pendientes",q) }
+  showReceipt(rec);
+}
+
+async function flushQueue(){
+  const q=store.get("cajero_pendientes",[]); if(!q.length||!CONFIG.endpoint) return;
+  const left=[];
+  for(const r of q){ if(!(await send(r))) left.push(r) }
+  store.set("cajero_pendientes",left);
+}
+setInterval(flushQueue,5*60*1000);
+window.addEventListener("online",flushQueue);
+
+/* Comprobante */
+function showReceipt(rec){
+  const v=CONFIG.versiculos[Math.floor(Math.random()*CONFIG.versiculos.length)];
+  const nombre=(rec.nombre||"").split(" ")[0];
+  $("#rc-paper").innerHTML=`
+    <div class="c"><b>CAJERO DE LA ESPERANZA</b><br>${esc(CONFIG.lugar)}</div><hr>
+    FECHA: ${esc(rec.fecha)}<br>CAJERO: ${esc(rec.kiosco)}<br>FOLIO: ${esc(rec.folio)}<hr>
+    OPERACIÓN: <b>${esc(rec.tipo_cajero)}</b><br>${esc(rec.operacion.toUpperCase())}<br>
+    MONTO: <b>GRATIS</b><br>SALDO DISPONIBLE: <b>GRACIA INFINITA</b><hr>
+    ${nombre?esc(nombre)+", "+esc(op.mensaje.charAt(0).toLowerCase()+op.mensaje.slice(1)):esc(op.mensaje)}
+    <div class="verse">“${esc(v)}”</div><hr>
+    <div class="c">Conserve este folio · Gracias por su visita</div>`;
+  const p=$("#rc-paper"); p.style.animation="none"; p.offsetHeight; p.style.animation="";
+  go("receipt");
+}
+
+/* =========================================================
+   CANAL NUEVO TIEMPO
+   ========================================================= */
+function tvUrl(){
+  const nt=CONFIG.nuevoTiempo;
+  if(nt.embedUrl) return nt.embedUrl;
+  if(nt.youtubeChannelId) return `https://www.youtube.com/embed/live_stream?channel=${encodeURIComponent(nt.youtubeChannelId)}&autoplay=1&mute=1`;
+  return "";
+}
+function startTV(){
+  const url=tvUrl(), scr=$("#tv-screen");
+  scr.innerHTML = url && navigator.onLine
+    ? `<iframe src="${esc(url)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`
+    : `<div class="tv-off"><span data-logo="nt"></span><h2>Nuevo Tiempo Chile</h2><p style="margin-top:1.5vmin">${esc(CONFIG.nuevoTiempo.info)}</p></div>`;
+  paintLogos();
+  $("#tv-info").innerHTML=`<b>Sobre el canal</b>${esc(CONFIG.nuevoTiempo.info)}<br><br>🌐 nuevotiempo.cl<br>▶️ YouTube: @NuevoTiempoChile`;
+  const q=$("#qr");
+  if(!q.dataset.done && window.QRCode){ new QRCode(q,{text:CONFIG.nuevoTiempo.website,width:256,height:256,correctLevel:QRCode.CorrectLevel.M}); q.dataset.done=1 }
+  if(!window.QRCode) q.innerHTML=`<div style="color:#000;font-size:.8em;padding:1vmin">${esc(CONFIG.nuevoTiempo.website)}</div>`;
+}
+function stopTV(){ $("#tv-screen").innerHTML="" }
+
+/* =========================================================
+   INACTIVIDAD (privacidad en espacio público)
+   ========================================================= */
+let lastTouch=Date.now(), idleTimer=null;
+["pointerdown","keydown"].forEach(ev=>document.addEventListener(ev,()=>{lastTouch=Date.now()},true));
+setInterval(()=>{
+  if(current==="home"||$("#idle").classList.contains("show")||$("#admin").classList.contains("show")) return;
+  const limit = current==="tv" ? CONFIG.inactividadSeg*5 : CONFIG.inactividadSeg; // la TV se puede mirar más rato
+  if((Date.now()-lastTouch)/1000>limit) showIdle();
+},1000);
+function showIdle(){
+  let n=CONFIG.avisoSeg; $("#idle-n").textContent=n; $("#idle").classList.add("show");
+  idleTimer=setInterval(()=>{ n--; $("#idle-n").textContent=n;
+    if(n<=0){clearInterval(idleTimer);$("#idle").classList.remove("show");go("home")} },1000);
+}
+$("#idle-stay").onclick=()=>{clearInterval(idleTimer);$("#idle").classList.remove("show");lastTouch=Date.now()};
+
+/* =========================================================
+   PANEL ADMIN OCULTO (mantener presionada esquina inf. derecha 3 s)
+   ========================================================= */
+let pressT=null;
+$("#admin-hit").addEventListener("pointerdown",()=>{pressT=setTimeout(openAdmin,3000)});
+["pointerup","pointerleave"].forEach(ev=>$("#admin-hit").addEventListener(ev,()=>clearTimeout(pressT)));
+function openAdmin(){
+  const pin=prompt("PIN de administrador"); if(pin!==CONFIG.adminPin) return;
+  const all=store.get("cajero_registros",[]), pend=store.get("cajero_pendientes",[]);
+  $("#adm-stats").innerHTML=`Registros guardados en este equipo: <b>${all.length}</b><br>Pendientes de envío: <b>${pend.length}</b><br>Endpoint: ${CONFIG.endpoint?"configurado ✔":"<b style='color:#c8312d'>NO configurado</b>"}`;
+  $("#admin").classList.add("show");
+}
+$("#adm-close").onclick=()=>$("#admin").classList.remove("show");
+$("#adm-retry").onclick=async()=>{await flushQueue();openAdminRefresh()};
+function openAdminRefresh(){ $("#admin").classList.remove("show"); openAdminNoPin() }
+function openAdminNoPin(){
+  const all=store.get("cajero_registros",[]), pend=store.get("cajero_pendientes",[]);
+  $("#adm-stats").innerHTML=`Registros guardados en este equipo: <b>${all.length}</b><br>Pendientes de envío: <b>${pend.length}</b>`;
+  $("#admin").classList.add("show");
+}
+$("#adm-fs").onclick=tryFullscreen;
+$("#adm-all").onclick=async()=>{
+  const all=store.get("cajero_registros",[]); let ok=0; const left=[];
+  for(const r of all){ if(await send(r)) ok++; else left.push(r) }
+  store.set("cajero_pendientes",left);
+  alert(`Enviados/confirmados: ${ok} · Fallidos: ${left.length}`); openAdminRefresh();
+};
+$("#adm-csv").onclick=()=>{
+  const all=store.get("cajero_registros",[]); if(!all.length){alert("Sin registros");return}
+  const cols=["folio","fecha","kiosco","operacion","tipo_cajero","nombre","telefono","comuna","direccion","detalle","consentimiento"];
+  const csv="﻿"+[cols.join(";"),...all.map(r=>cols.map(c=>`"${String(r[c]??"").replace(/"/g,'""')}"`).join(";"))].join("\n");
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  a.download=`cajero_${CONFIG.kioscoId}_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+};
+
+/* Inicio */
+paintLogos(); tick(); setInterval(tick,15000); flushQueue();
+document.addEventListener("gesturestart",e=>e.preventDefault());
+</script>
 </body>
 </html>
